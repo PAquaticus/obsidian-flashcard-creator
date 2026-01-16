@@ -1,17 +1,19 @@
 import { Plugin } from "obsidian";
-import { ExampleView, VIEW_TYPE_EXAMPLE } from "./views/ExampleView";
+import { AiAnkiFlashcardsView, AI_ANKI_FLASHCARDS_VIEW_TYPE } from "./view";
+import { AiAnkiFlashcardsSettingTab } from "./settings";
 import "virtual:uno.css";
+import type { AiAnkiFlashcardsSettings } from "./types";
 
-interface ObsidianNoteConnectionsSettings {
-	mySetting: string;
-}
-
-const DEFAULT_SETTINGS: ObsidianNoteConnectionsSettings = {
-	mySetting: "default",
+const DEFAULT_SETTINGS: AiAnkiFlashcardsSettings = {
+	llmProvider: "gemini",
+	geminiApiKey: "",
+	mistralApiKey: "",
+	ankiConnectUrl: "http://localhost:8765",
+	masterPrompts: [],
 };
 
-export default class ObsidianNoteConnections extends Plugin {
-	settings!: ObsidianNoteConnectionsSettings;
+export default class AiAnkiFlashcardsPlugin extends Plugin {
+	settings!: AiAnkiFlashcardsSettings;
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -24,27 +26,30 @@ export default class ObsidianNoteConnections extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.registerView(VIEW_TYPE_EXAMPLE, (leaf) => new ExampleView(leaf));
+		this.addSettingTab(new AiAnkiFlashcardsSettingTab(this.app, this));
 
-		this.addRibbonIcon("dice", "Activate view", () => {
+		this.registerView(AI_ANKI_FLASHCARDS_VIEW_TYPE, (leaf) => new AiAnkiFlashcardsView(leaf, this));
+
+		this.addRibbonIcon("brain-circuit", "AI Anki Flashcards", () => {
 			this.activateView();
 		});
 	}
 
 	onunload() {
-		console.log("unloading plugin");
+		this.app.workspace.detachLeavesOfType(AI_ANKI_FLASHCARDS_VIEW_TYPE);
 	}
 
 	async activateView() {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE);
+		this.app.workspace.detachLeavesOfType(AI_ANKI_FLASHCARDS_VIEW_TYPE);
 
-		await this.app.workspace.getRightLeaf(false).setViewState({
-			type: VIEW_TYPE_EXAMPLE,
+		await this.app.workspace.getLeftLeaf(false).setViewState({
+			type: AI_ANKI_FLASHCARDS_VIEW_TYPE,
 			active: true,
 		});
 
 		this.app.workspace.revealLeaf(
-			this.app.workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE)[0],
+			this.app.workspace.getLeavesOfType(AI_ANKI_FLASHCARDS_VIEW_TYPE)[0],
 		);
 	}
 }
+

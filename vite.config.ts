@@ -1,15 +1,16 @@
+/// <reference types="vitest" />
 import { pathToFileURL } from "url";
 import { svelte, vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import builtins from "builtin-modules";
 import UnoCSS from "unocss/vite";
-import { PluginOption, defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 
 const setOutDir = (mode: string) => {
 	switch (mode) {
 		case "development":
 			return "./test-vault/.obsidian/plugins/obsidian-svelte-plugin";
 		case "production":
-			return "build";
+			return ".";
 	}
 };
 
@@ -53,5 +54,9 @@ export default defineConfig(({ mode }) => {
 			emptyOutDir: false,
 			sourcemap: "inline",
 		},
+        test: {
+            globals: true,
+            environment: 'node',
+        },
 	};
 });
