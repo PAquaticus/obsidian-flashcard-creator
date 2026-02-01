@@ -5,7 +5,7 @@ import type AiAnkiFlashcardsPlugin from "./main";
 export const AI_ANKI_FLASHCARDS_VIEW_TYPE = "ai-anki-flashcards-view";
 
 export class AiAnkiFlashcardsView extends ItemView {
-    component: SidebarViewComponent;
+    component?: SidebarViewComponent;
     plugin: AiAnkiFlashcardsPlugin;
 
     constructor(leaf: WorkspaceLeaf, plugin: AiAnkiFlashcardsPlugin) {
@@ -25,13 +25,14 @@ export class AiAnkiFlashcardsView extends ItemView {
         this.component = new SidebarViewComponent({
             target: this.contentEl,
             props: {
-                app: this.app,
-                settings: this.plugin.settings
+                app: this.app
             }
         });
     }
 
     async onClose() {
-        this.component.$destroy();
+        if (this.component) {
+            this.component.$destroy();
+        }
     }
 }

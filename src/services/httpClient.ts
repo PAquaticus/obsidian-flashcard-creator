@@ -1,18 +1,30 @@
-// src/services/httpClient.ts
+import axios, { type Method } from 'axios';
 import { request as obsidianRequest } from 'obsidian';
 
 export interface HttpClient {
-    post(url: string, options: { headers: any, body: any }): Promise<any>;
+    post(url: string, options: { body?: string, headers?: Record<string, string> }): Promise<unknown>;
 }
 
 export class ObsidianHttpClient implements HttpClient {
-    async post(url: string, options: { headers: any, body: any }): Promise<any> {
+    async post(url: string, options: { body?: string, headers?: Record<string, string> }): Promise<unknown> {
         const response = await obsidianRequest({
-            url,
+            url: url,
             method: 'POST',
-            headers: options.headers,
-            body: options.body
+            body: options.body,
+            headers: options.headers
         });
         return JSON.parse(response);
     }
+}
+
+
+export async function request(options: { url: string, method: string, body?: string, headers: { [key: string]: string } }) {
+    const response = await axios({
+        method: options.method as Method,
+        url: options.url,
+        data: options.body,
+        headers: options.headers,
+    });
+
+    return JSON.stringify(response.data);
 }

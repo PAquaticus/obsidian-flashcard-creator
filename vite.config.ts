@@ -8,11 +8,14 @@ import { defineConfig } from "vitest/config";
 const setOutDir = (mode: string) => {
 	switch (mode) {
 		case "development":
-			return "./test-vault/.obsidian/plugins/obsidian-svelte-plugin";
-		case "production":
 			return ".";
+		case "production":
+			return "dist";
 	}
 };
+
+
+import path from 'path';
 
 export default defineConfig(({ mode }) => {
 	return {
@@ -58,5 +61,11 @@ export default defineConfig(({ mode }) => {
             globals: true,
             environment: 'node',
         },
+        resolve: {
+            alias: {
+                'obsidian': path.resolve(__dirname, './tests/mocks/obsidian.ts'),
+            }
+        }
 	};
 });
+

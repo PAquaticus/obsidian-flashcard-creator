@@ -1,20 +1,14 @@
-import { writable } from "svelte/store";
-import type { AiAnkiFlashcardsSettings } from "./types";
+import { writable } from 'svelte/store';
+import type { Deck, AiAnkiFlashcardsSettings } from './types';
+import { DEFAULT_SETTINGS } from './defaults';
 
-export const settings = writable<AiAnkiFlashcardsSettings>({
-    geminiApiKey: "",
-    ankiConnectUrl: "http://localhost:8765",
-    masterPrompts: [],
-});
+export const decks = writable<Deck[]>([]);
+export const ankiConnectUrl = writable<string | undefined>(undefined);
 
-export interface Flashcard {
-    id: string; 
-    question: string;
-    answer: string;
-    selected: boolean;
-}
-
-export const flashcards = writable<Flashcard[]>([]);
-
-export const isLoading = writable<boolean>(false);
+// Stores for UI state
+export const flashcards = writable<any[]>([]); // Using any for now, could be more specific
+export const isLoading = writable(false);
 export const error = writable<string | null>(null);
+
+// Settings store
+export const settings = writable<AiAnkiFlashcardsSettings>(DEFAULT_SETTINGS);
