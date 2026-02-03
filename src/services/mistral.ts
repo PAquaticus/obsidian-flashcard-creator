@@ -116,19 +116,36 @@ class Mistral implements LLM {
       body: JSON.stringify(requestBody),
     });
 
-    if (data.choices && data.choices.length > 0) {
-      const choice = data.choices[0];
-      if (choice.message?.content) {
-        return choice.message.content;
-      }
-    }
-
-    if (data.error) {
-      throw new Error(data.error.message);
-    }
-
-    throw new Error("Invalid response from Mistral API");
+    return parseFlashcardResponseData(data);
   }
 }
+
+export const parseFlashcardResponseData = (data: any) => {
+  if (data.choices && data.choices.length > 0) {
+    const choice = data.choices[0];
+    if (choice.message?.content) {
+      let content = choice.message.content;
+      // Remove the ```json and ``` fences, then escape newlines within string values
+      content = content.replace(/^```json\s*|\s*```$/g, "");
+      content = escapeNewlinesInJsonString(content);
+      return content;
+    }
+  }
+
+  if (data.error) {
+    throw new Error(data.error.message);
+  }
+
+  throw new Error("Invalid response from Mistral API");
+};
+
+const escapeNewlinesInJsonString = (jsonString: string): string => {
+  return jsonString.replace(
+    /\"([^\"\\]*(?:\\.[^\"\\]*)*)\"/g,
+    (match, group1) => {
+      return '"' + group1.replace(/\n/g, "\\n").replace(/\r/g, "\\r") + '"';
+    },
+  );
+};
 
 export const mistral = new Mistral();

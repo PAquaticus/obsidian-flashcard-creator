@@ -1,13 +1,14 @@
 import "dotenv/config";
 import { describe, it, expect } from "vitest";
-import { buildMistralRequest } from "../src/services/mistral";
+import {
+  buildMistralRequest,
+  parseFlashcardResponseData,
+} from "../src/services/mistral";
 import { AxiosHttpClient } from "./AxiosHttpClient";
 
 const parseAndValidateFlashcards = (response: string) => {
   try {
-    const flashcards = JSON.parse(
-      response.replace(/^```json\s*|\s*```$/g, "").replace("\n", ""),
-    );
+    const flashcards = JSON.parse(response);
     expect(Array.isArray(flashcards.flashcards)).toBe(true);
     expect(flashcards.flashcards.length).toBeGreaterThan(0);
     flashcards.flashcards.forEach((card: any) => {
@@ -17,7 +18,7 @@ const parseAndValidateFlashcards = (response: string) => {
     return flashcards;
   } catch (e) {
     console.error("Failed to parse JSON:", e);
-    expect.fail("Response was not valid JSON.");
+    throw new Error("Response was not valid JSON.");
   }
 };
 
@@ -43,18 +44,17 @@ describe("Mistral Service Integration", () => {
         content,
       );
 
-      const response: any = await httpClient.post(apiUrl, {
+      const data: any = await httpClient.post(apiUrl, {
         headers,
         body: JSON.stringify(requestBody),
       });
+
+      const processedContent = parseFlashcardResponseData(data);
+      console.log(processedContent);
       await Bun.sleep(1000);
 
-      console.log("Raw Mistral Response (Master Prompt):", response);
-
-      expect(response.choices[0].message.content).toBeTypeOf("string");
-      expect(response.choices[0].message.content.length).toBeGreaterThan(0);
-
-      parseAndValidateFlashcards(response.choices[0].message.content);
+      // The processedContent from generateFlashcards should now be a clean JSON string
+      parseAndValidateFlashcards(processedContent);
     },
     10000,
   );
@@ -72,19 +72,18 @@ describe("Mistral Service Integration", () => {
         content,
       );
 
-      const response: any = await httpClient.post(apiUrl, {
+      const data: any = await httpClient.post(apiUrl, {
         headers,
         body: JSON.stringify(requestBody),
       });
+
+      const processedContent = parseFlashcardResponseData(data);
+      console.log(processedContent);
       await Bun.sleep(1000);
 
-      console.log("Raw Mistral Response (Agent):", response);
-
-      expect(response.choices[0].message.content).toBeTypeOf("string");
-      expect(response.choices[0].message.content.length).toBeGreaterThan(0);
-
-      parseAndValidateFlashcards(response.choices[0].message.content);
+      // The processedContent from generateFlashcards should now be a clean JSON string
+      parseAndValidateFlashcards(processedContent);
     },
-    10000,
+    30000,
   );
 });
