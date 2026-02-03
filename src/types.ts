@@ -19,8 +19,10 @@ export interface Note {
 
 export type GenerationPayload = string | { agentId: string };
 
+export type LLMProvider = "gemini" | "mistral";
+
 export interface AiAnkiFlashcardsSettings {
-    llmProvider: "gemini" | "mistral";
+    llmProvider: LLMProvider;
     apiKeys: {
         gemini: string;
         mistral: string;

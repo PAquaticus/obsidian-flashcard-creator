@@ -1,129 +1,142 @@
-# AI Anki Flashcards Plugin Specification
+# Specification
 
-This document outlines the technical specification for the AI Anki Flashcards Obsidian plugin.
+This document outlines the implementation of multi-LLM support in the AI Anki Flashcards plugin.
 
-## 1. Plugin Interface (Sidebar View)
+## 1. High-Level Requirements
 
-The main user interface will be a view in the left sidebar of Obsidian. This view will be built using Svelte.
+The user wants to be able to use multiple Large Language Models (LLMs) for generating flashcards. This includes:
+-   Configuring API keys for different LLMs.
+-   Choosing the LLM provider in the flashcard generation view.
+-   For Mistral, using predefined agents.
+-   Defining and using multiple master system prompts.
+-   The UI should only show options for LLMs that have a configured API key.
 
-### Components:
+## 2. Detailed Feature Breakdown
 
-- **Prompt Selection:**
-    - A dropdown/select menu to choose from a list of pre-configured "master prompts".
-    - A text area, pre-filled with the selected master prompt, allowing for on-the-fly modifications before generation.
+### 2.1. Settings
 
-- **Generation Button:**
-    - A button labeled "Generate Flashcards".
-    - When clicked, it will trigger the flashcard generation process based on the currently active file or selection.
+The settings view will be updated to support the new features.
 
-- **Flashcard Review Area:**
-    - This area will be populated after the AI returns with flashcard data.
-    - It will display a list of generated flashcards.
-    - Each flashcard item will have:
-        - A checkbox to select it for sending to Anki.
-        - Two editable text fields: one for the "Question" and one for the "Answer".
-        - This allows the user to review and modify the content before submission.
+#### 2.1.1. LLM Provider Settings
 
-- **Anki Submission Button:**
-    - A button labeled "Send to Anki".
-    - This will be active only when there are selected flashcards.
-    - When clicked, it sends the selected and edited flashcards to the Anki Connect server.
+-   A new section for each supported LLM (Gemini and Mistral).
+-   Each section will have a field for the API key.
 
-- **Status Display:**
-    - A small area to display feedback to the user, such as:
-        - "Checking Anki Connect..."
-        - "Generating flashcards..."
-        - "Successfully sent X flashcards to Anki."
-        - "Error: Anki Connect is not reachable."
-        - "Error: Gemini API key is not valid."
+#### 2.1.2. Master Prompts
 
-## 2. Plugin Configuration (Settings Page)
+-   A new section to manage master system prompts.
+-   Users can add, edit, and delete multiple master prompts.
+-   Each prompt will be a text area.
 
-The plugin will have a settings page within Obsidian's settings.
+#### 2.1.3. Mistral Agents
 
-### Settings Fields:
+-   Under the Mistral settings section, users can manage predefined agents.
+-   Users can add, edit, and delete agents.
+-   Each agent will have a "Name" (for display in the UI) and an "Agent ID".
 
-- **Gemini API Key:**
-    - A text input field for the user's Gemini API key. This should be stored securely.
+### 2.2. Sidebar View (Flashcard Generation)
 
-- **Anki Connect Configuration:**
-    - **URL:** Text input for the Anki Connect server URL (e.g., `http://localhost:8765`).
-    - **Username:** Text input for the Anki Connect username (if required).
-    - **Password:** A password input field for the Anki Connect password (if required).
+The sidebar view for generating flashcards will be updated to allow the user to select the LLM and prompt/agent.
 
-- **Master Prompts:**
-    - A section to manage master prompts for the AI.
-    - The user should be able to:
-        - Add a new master prompt (e.g., via a text area and "Save" button).
-        - Edit an existing master prompt.
-        - Delete a master prompt.
-        - Each prompt should have a name for easy identification in the sidebar dropdown.
+#### 2.2.1. LLM Selection
 
-## 3. Core Logic and Workflow
+-   A dropdown menu to select the LLM provider.
+-   This dropdown will only list LLMs for which an API key has been provided in the settings.
 
-### Workflow:
+#### 2.2.2. Prompt/Agent Selection
 
-1.  **User Action:** The user opens a note, selects some text (optional), and opens the plugin sidebar.
-2.  **Prompt Selection:** The user chooses a master prompt from the dropdown and can modify it in the text area.
-3.  **Generation Trigger:** The user clicks "Generate Flashcards".
-4.  **Anki Connect Check (Pre-flight):**
-    - The plugin will make a test call to the Anki Connect URL (e.g., a simple `version` request) to verify connectivity.
-    - If the check fails, the process stops, and an error is shown to the user.
-5.  **Content Gathering:**
-    - The plugin determines the context: either the entire content of the active editor or the currently selected text.
-6.  **AI Request:**
-    - The plugin constructs a request to the Gemini API.
-    - The request will contain the user's content (note/selection) and the system prompt.
-    - The prompt will instruct the AI to return a list of flashcards in a structured format (e.g., a JSON array of objects, where each object has a "question" and "answer" key).
-    - Example expected AI output:
-      ```json
-      [
-        {"question": "What is the capital of France?", "answer": "Paris"},
-        {"question": "What is 2 + 2?", "answer": "4"}
-      ]
-      ```
-7.  **Display for Review:**
-    - The plugin parses the AI's response.
-    - The list of flashcards is rendered in the sidebar's review area.
-8.  **User Review and Selection:**
-    - The user can edit the question and answer for each card.
-    - The user selects the cards they wish to create in Anki using the checkboxes.
-9.  **Anki Submission:**
-    - The user clicks "Send to Anki".
-    - The plugin constructs a request to the Anki Connect API (`addNotes` action).
-    - Each selected flashcard will be formatted as a note object and sent to Anki.
-    - The plugin will show a success or error message.
+-   A second dropdown menu will appear after selecting an LLM.
+-   If **Gemini** is selected, this dropdown will list the available "Master Prompts".
+-   If **Mistral** is selected, this dropdown will be grouped into "Master Prompts" and "Agents", listing the respective items from the settings.
 
-## 4. Data Structures
+#### 2.2.3. Flashcard Generation
 
-- **Flashcard:**
-  ```typescript
-  interface Flashcard {
-    id: string; // for UI keying
-    question: string;
-    answer: string;
-    selected: boolean;
-  }
-  ```
+-   The "Generate Flashcards" button will trigger the card generation using the selected LLM and prompt/agent.
+-   The request to the LLM will be formatted to expect the specified JSON output.
 
-- **Plugin Settings:**
-  ```typescript
-  interface MyPluginSettings {
-    geminiApiKey: string;
-    ankiConnectUrl: string;
-    ankiConnectUsername?: string;
-    ankiConnectPassword?: string;
-s    masterPrompts: { name: string; text: string; }[];
-  }
-  ```
+## 3. Data Model Changes
 
-## 5. Implementation Plan
+The `PluginSettings` interface in `src/settings.ts` will be updated to store the new configuration.
 
-1.  **Setup Sidebar View:** Create the basic Svelte component for the sidebar and register it in `main.ts`.
-2.  **Implement Settings Tab:** Create the settings tab with fields for API keys, Anki config, and prompt management.
-3.  **Anki Connect Service:** Implement a service/module to handle all communication with Anki Connect, including the pre-flight check and adding notes.
-4.  **Gemini Service:** Implement a service/module for making requests to the Gemini API.
-5.  **Wire up UI:** Connect the UI components (buttons, dropdowns, etc.) to the core logic.
-6.  **State Management:** Use a Svelte store to manage the state of the flashcards, UI, and settings.
-7.  **Finalize Workflow:** Integrate all pieces to create the complete user workflow.
-8.  **Error Handling:** Implement robust error handling for API calls, network issues, and unexpected data formats.
+```typescript
+export interface PluginSettings {
+  llmProvider: 'gemini' | 'mistral';
+  apiKeys: {
+    gemini: string;
+    mistral: string;
+  };
+  masterPrompts: string[];
+  mistralAgents: { name: string; id: string }[];
+  // ... existing settings
+}
+```
+
+## 4. Implementation Plan
+
+1.  **Update Settings:**
+    -   Modify `src/settings.ts` to implement the new settings interface and UI components in the `SettingTab` class.
+    -   Update `src/main.ts` to handle setting defaults and loading/saving.
+
+2.  **Research Mistral Agents:**
+    -   Investigate the Mistral API documentation to understand how to use predefined agents via their ID.
+
+3.  **Update Sidebar View:**
+    -   Modify `SidebarView.svelte` to add the new dropdowns for LLM and prompt/agent selection.
+    -   Use Svelte's reactive statements to update the UI based on user selections.
+    -   Update `src/stores.ts` if necessary to manage the state of available LLMs and prompts.
+
+4.  **Update LLM Services:**
+    -   Refactor `src/services/llm.ts` to include a more generic interface if needed.
+    -   Update `src/services/gemini.ts` to use the new API key setting and selected master prompt.
+    -   Update `src/services/mistral.ts` to:
+        -   Use the new API key setting.
+        -   Handle both master prompts and predefined agents.
+        -   Incorporate the JSON response format requirement into the prompt.
+
+5.  **Testing:**
+    -   Review and update existing tests in the `tests/` directory.
+    -   Add new tests for the multi-LLM and Mistral agent functionality.
+-  **JSON response format**
+   -  The user has provided a JSON schema that the AI is expected to return. The system prompt will be updated to reflect this. The new prompt will be:
+   
+   ```
+   You are an expert in generating flashcards. Your response should be in the following JSON format:
+   
+   {
+     "type": "object",
+     "required": [
+       "flashcards"
+     ],
+     "properties": {
+       "flashcards": {
+         "type": "array",
+         "items": {
+           "type": "object",
+           "required": [
+             "q",
+             "a"
+           ],
+           "properties": {
+             "a": {
+               "type": "string",
+               "description": "The answer or explanation for the flashcard"
+             },
+             "q": {
+               "type": "string",
+               "description": "The question or prompt for the flashcard"
+             },
+             "level": {
+               "type": "string",
+               "description": "Is it foundation, judgment or understanding type"
+             }
+           },
+           "additionalProperties": false
+         },
+         "description": "A list of flashcards, each containing a question and answer pair"
+       }
+     },
+     "additionalProperties": false
+   }
+   
+   Please generate flashcards based on the provided text.
+   ```

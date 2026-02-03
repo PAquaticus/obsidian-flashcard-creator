@@ -60,7 +60,7 @@ class Gemini implements LLM {
           }
       };
 
-      const data = await httpClient.post(apiUrl, {
+      const data: any = await httpClient.post(apiUrl, {
           headers: {
               'Content-Type': 'application/json'
           },

@@ -1,110 +1,115 @@
-# Obsidian Plugin Template with Svelte and Tailwind CSS (UnoCSS)
+# AI Anki Flashcards for Obsidian
 
-This is a template repository for creating an Obsidian plugin using Svelte and
-Tailwind CSS (UnoCSS). It provides a basic setup and structure to kickstart your
-development process.
-
-Obsidian is a powerful note-taking and knowledge management application. With
-the help of this template, you can create a plugin that extends Obsidian's
-functionality using Svelte, a popular JavaScript framework for building user
-interfaces, along with Tailwind CSS (UnoCSS), a utility-first CSS framework.
+An Obsidian plugin to generate Anki flashcards from your notes using AI.
 
 ## Features
 
-- **Svelte integration**: Leverage the power of Svelte to build interactive and
-  reactive user interfaces.
-- **Tailwind CSS (UnoCSS)**: Utilize the comprehensive utility classes provided by
-  Tailwind CSS (UnoCSS) to style your plugin.
-- **Easy setup**: Get started quickly with a pre-configured project structure
-  and build setup.
-- **Hot-reloading**: Enjoy fast development cycles with automatic reloading
-  during development.
-- **Example plugin**: Includes a basic example plugin to help you understand the
-  structure and usage.
+- **AI-Powered Flashcard Generation**: Automatically create flashcards from your notes using the power of Large Language Models.
+- **Multiple AI Providers**: Choose between Google's Gemini or Mistral AI to generate your flashcards.
+- **Flexible Prompting**:
+  - Use a "Master Prompt" to guide the AI in flashcard creation.
+  - Leverage specialized Mistral "Agents" for more controlled and context-specific generation.
+- **Review and Edit**: Before sending your new flashcards to Anki, you can review, edit, or delete them within Obsidian.
+- **Anki Integration**:
+  - Directly send your generated flashcards to a specified Anki deck.
+  - Create new Anki decks on the fly from within Obsidian.
+  - Uses a custom anki card api that under the hood calls anki pip package on a nother server
 
-## Prerequisites
+## Technologies Used
 
-Before you get started, ensure that you have the following software installed:
+- [Obsidian.md](https://obsidian.md/): The note-taking application where the plugin runs.
+- [Svelte](https://svelte.dev/): For building the plugin's user interface.
+- [TypeScript](https://www.typescriptlang.org/): For writing robust and type-safe code.
+- [Vite](https://vitejs.dev/): As the build tool for the plugin.
+- [UnoCSS](https://unocss.dev/): For utility-first CSS styling.
 
-- [node.js](https://nodejs.org) (v14 or above)
-- [bun.sh](https://bun.sh/) (way better than any other node package managers)
+## Project Structure
 
-## Getting Started
+- `src/main.ts`: The entry point for the plugin, where it's initialized in Obsidian.
+- `src/view.ts`: Defines the main view for the plugin.
+- `src/SidebarView.svelte`: The main user interface component, built with Svelte.
+- `src/services/`: Contains the business logic for interacting with external services.
+  - `anki.ts`: Handles communication with the AnkiConnect API.
+  - `gemini.ts`: Implements flashcard generation using the Gemini API.
+  - `mistral.ts`: Implements flashcard generation using the Mistral API.
+- `src/settings.ts`: Manages the settings for the plugin.
+- `src/types.ts`: Contains the TypeScript type definitions used throughout the project.
+- `src/stores.ts`: Svelte stores for managing the application's state.
 
-To create a new plugin using this template, follow these steps:
+## Installation and Configuration
 
-1. Click on the **"Use this template"** button at the top of the repository to
-   create a new repository based on this template.
-2. Clone the newly created repository to your local machine.
-3. Open a terminal and navigate to the cloned repository.
-4. Install the project dependencies by running the following command:
+### Installation
 
-```bash
-bun install
-```
+1.  Download the latest release from the [releases page](https://github.com/your-username/your-repo/releases).
+2.  In Obsidian, go to `Settings` > `Community plugins`.
+3.  Turn off "Safe mode".
+4.  Click on "Install plugin from file" and select the downloaded `main.js`, `manifest.json`, and `styles.css` files.
+5.  Enable the "AI Anki Flashcards" plugin.
 
-5. Start the development server with hot-reloading using the following command:
+### Configuration
+
+After installing the plugin, you need to configure it in the settings:
+
+1.  **AnkiConnect URL**: Set the URL for AnkiConnect, which is usually `http://localhost:8765`.
+2.  **API Keys**: Provide your API keys for Gemini and/or Mistral.
+3.  **Master Prompts**: You can define one or more "Master Prompts" that will be used to instruct the AI on how to generate the flashcards.
+4.  **Mistral Agents**: If you use Mistral, you can configure specialized agents with their own instructions.
+
+## Development
+
+To work on this plugin locally, follow these steps:
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org) (v14 or above)
+- [Bun](https://bun.sh/)
+
+### Setup
+
+1.  Clone the repository.
+2.  Navigate to the project's directory in your terminal.
+3.  Install the dependencies:
+    ```bash
+    bun install
+    ```
+
+### Running in Development Mode
+
+To start the development server with hot-reloading:
 
 ```bash
 bun dev
 ```
 
-6. In **Obsidian**, open **Settings**.
-7. In the side menu, select **Community plugins**.
-8. Select **Turn on community plugins**.
-9. Under **Installed plugins**, enable the **Obsidian Svelte Plugin** by
-   selecting the toggle button next to it.
-10. Start **building** your plugin by modifying the example plugin located in
-    the src directory. You can also create new components and files as needed.
-11. Once you're ready to bundle your plugin for **production**, run the
-    following command:
+This will watch for changes and automatically rebuild the plugin. You'll need to have the plugin installed in your Obsidian vault and enabled.
+
+### Building for Production
+
+To create a production-ready build of the plugin:
 
 ```bash
 bun run build
 ```
 
-11. The bundled plugin file will be generated in the `build` directory.
+The bundled files will be generated in the `dist/` directory.
 
-## Project Structure
+### Running Tests
 
-The project structure follows a typical Svelte application structure with a few
-additional files specific to Obsidian plugin development. Here's an overview:
+To run the test suite:
 
-- `src/` - Contains the **source code** for your plugin.
-  - **main.ts** - The **entry point** for your plugin, initializes the plugin in
-    Obsidian.
-  - **styles.css** - The global css **styles** for your plugin.
-  - `components/` - Contains **Svelte Components**.
-    - **Example.svelte** - An example **Svelte Component** for the example
-      Obsidian View.
-  - `views/` - Contains **Obsidian Views**.
-    - **ExampleView.ts** - An example **Obsidian View** with Svelte.
-- `build/` - The bundled output directory for the plugin generated by the build
-  command.
-- **manifest.json** - The plugin manifest file that describes your plugin's
-  metadata.
+```bash
+bun test
+```
 
-## Source mapping
-To get the source map to load in Obsidian, and thus allowing you to see your Typescript code when debugging, you might need to set the 
-**sourcemapBaseUrl** parameter in **vite.config.ts**. To actual path can be found by adding the folder (test-vault) containing your .map file to the "Filesystem" 
-tab in the debugger. Right-click the map file and select "Copy link address". Set **sourcemapBaseUrl** to the base address.
+### Linting and Formatting
 
-## Resources
+To lint and format the code, use the following commands:
 
-Here are some resources to help you get started with building plugins for
-Obsidian, Svelte, and Tailwind CSS (UnoCSS):
+```bash
+# To check for linting issues
+bun run lint
 
-- [Obsidian Plugin API Documentation](https://github.com/obsidianmd/obsidian-api)
-- [Svelte Documentation](https://svelte.dev/docs)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [UnoCSS Documentation](https://unocss.dev/)
+# To format the code
+bun run format
+```
 
-## Contributing
-
-If you encounter any issues or have suggestions for improvements, feel free to
-open an issue or submit a pull request. Contributions are welcome!
-
-## License
-
-This template is available under the [MIT License](LICENSE). Feel free to modify
-and use it to create your own Obsidian plugins.

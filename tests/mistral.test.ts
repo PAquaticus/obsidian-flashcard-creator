@@ -1,40 +1,90 @@
-import 'dotenv/config';
-import { describe, it, expect } from 'vitest';
-import { mistral } from '../src/services/mistral';
-import { AxiosHttpClient } from './AxiosHttpClient';
+import "dotenv/config";
+import { describe, it, expect } from "vitest";
+import { buildMistralRequest } from "../src/services/mistral";
+import { AxiosHttpClient } from "./AxiosHttpClient";
 
-describe('Mistral Service', () => {
-    const apiKey = process.env.MISTRAL_API_KEY;
-    const httpClient = new AxiosHttpClient();
+const parseAndValidateFlashcards = (response: string) => {
+  try {
+    const flashcards = JSON.parse(
+      response.replace(/^```json\s*|\s*```$/g, "").replace("\n", ""),
+    );
+    expect(Array.isArray(flashcards.flashcards)).toBe(true);
+    expect(flashcards.flashcards.length).toBeGreaterThan(0);
+    flashcards.flashcards.forEach((card: any) => {
+      expect(card).toHaveProperty("q");
+      expect(card).toHaveProperty("a");
+    });
+    return flashcards;
+  } catch (e) {
+    console.error("Failed to parse JSON:", e);
+    expect.fail("Response was not valid JSON.");
+  }
+};
 
-    // Skip tests if API key is not provided
-    const itif = apiKey ? it : it.skip;
+describe("Mistral Service Integration", () => {
+  const apiKey = process.env.MISTRAL_API_KEY;
+  const agentId = process.env.MISTRAL_AGENT_ID;
+  const httpClient = new AxiosHttpClient();
 
-    itif('should generate flashcards from a given text', async () => {
-        const systemPrompt = "Generate 2 flashcards in JSON format with 'question' and 'answer' keys from the following text:";
-        const content = "The capital of France is Paris. The mitochondria is the powerhouse of the cell.";
+  const itif = apiKey ? it : it.skip;
+  const itifAgent = apiKey && agentId ? it : it.skip;
 
-        const response = await mistral.generateFlashcards(httpClient, apiKey!, systemPrompt, content);
+  itif(
+    "should generate flashcards using a master prompt",
+    async () => {
+      const generationPayload =
+        "Generate 2 flashcards in JSON format with 'q' and 'a' keys from the following text:";
+      const content =
+        "The capital of France is Paris. The mitochondria is the powerhouse of the cell.";
 
-        console.log("Raw Mistral Response:", response); // Log the raw response
+      const { apiUrl, requestBody, headers } = buildMistralRequest(
+        apiKey!,
+        generationPayload,
+        content,
+      );
 
-        expect(response).toBeTypeOf('string');
-        expect(response.length).toBeGreaterThan(0);
+      const response: any = await httpClient.post(apiUrl, {
+        headers,
+        body: JSON.stringify(requestBody),
+      });
+      await Bun.sleep(1000);
 
-        let flashcards;
-        try {
-            flashcards = JSON.parse(response);
-        } catch (e) {
-            console.error("Failed to parse JSON:", e); // Log parsing error
-            // Fail the test if parsing fails
-            expect.fail("Response was not valid JSON.");
-        }
+      console.log("Raw Mistral Response (Master Prompt):", response);
 
-        expect(Array.isArray(flashcards)).toBe(true);
-        expect(flashcards.length).toBe(2);
-        flashcards.forEach(card => {
-            expect(card).toHaveProperty('question');
-            expect(card).toHaveProperty('answer');
-        });
-    }, 10000); // 10 second timeout for the API call
+      expect(response.choices[0].message.content).toBeTypeOf("string");
+      expect(response.choices[0].message.content.length).toBeGreaterThan(0);
+
+      parseAndValidateFlashcards(response.choices[0].message.content);
+    },
+    10000,
+  );
+
+  itifAgent(
+    "should generate flashcards using an agent",
+    async () => {
+      const generationPayload = { agentId: agentId! };
+      const content =
+        "The capital of Spain is Madrid. The powerhouse of the cell is the mitochondria.";
+
+      const { apiUrl, requestBody, headers } = buildMistralRequest(
+        apiKey!,
+        generationPayload,
+        content,
+      );
+
+      const response: any = await httpClient.post(apiUrl, {
+        headers,
+        body: JSON.stringify(requestBody),
+      });
+      await Bun.sleep(1000);
+
+      console.log("Raw Mistral Response (Agent):", response);
+
+      expect(response.choices[0].message.content).toBeTypeOf("string");
+      expect(response.choices[0].message.content.length).toBeGreaterThan(0);
+
+      parseAndValidateFlashcards(response.choices[0].message.content);
+    },
+    10000,
+  );
 });

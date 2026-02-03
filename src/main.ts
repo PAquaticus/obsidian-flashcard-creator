@@ -17,7 +17,7 @@ export default class AiAnkiFlashcardsPlugin extends Plugin {
 	}
 
 	// biome-ignore lint/suspicious/noExplicitAny: This function handles migration of potentially untyped or old settings data.
-	migrateSettings(settings: Record<string, any>): AiAnkiFlashcardsSettings { // Changed to Record<string, any>
+	migrateSettings(settings: Record<string, any>): Record<string, any> { // Changed to Record<string, any>
 		if (!settings.apiKeys || typeof settings.apiKeys !== 'object') {
 			settings.apiKeys = {
 				gemini: settings.geminiApiKey || "",
@@ -59,14 +59,6 @@ export default class AiAnkiFlashcardsPlugin extends Plugin {
 		await this.loadSettings();
 
 		ankiConnectUrl.set(this.settings.ankiConnectUrl);
-
-		try {
-			const loadedDecks = await getDecks(this.settings.ankiConnectUrl);
-			decks.set(loadedDecks);
-		} catch (error) {
-			console.error("Failed to load Anki decks:", error);
-			new Notice(`Failed to load Anki decks. Is Anki running and accessible at ${this.settings.ankiConnectUrl}? Check console for details.`);
-		}
 		
 
 		this.addSettingTab(new AiAnkiFlashcardsSettingTab(this.app, this));
