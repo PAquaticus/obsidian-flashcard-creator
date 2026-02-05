@@ -44,10 +44,12 @@ describe("Mistral Service Integration", () => {
         content,
       );
 
-      const data: any = await httpClient.post(apiUrl, {
+      const response = await fetch(apiUrl, {
         headers,
         body: JSON.stringify(requestBody),
+        method: "POST",
       });
+      const data = await response.json();
 
       const processedContent = parseFlashcardResponseData(data);
       console.log(processedContent);
@@ -72,10 +74,12 @@ describe("Mistral Service Integration", () => {
         content,
       );
 
-      const data: any = await httpClient.post(apiUrl, {
+      const response = await fetch(apiUrl, {
         headers,
         body: JSON.stringify(requestBody),
+        method: "POST",
       });
+      const data = await response.json();
 
       const processedContent = parseFlashcardResponseData(data);
       console.log(processedContent);
