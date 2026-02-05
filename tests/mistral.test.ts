@@ -4,7 +4,6 @@ import {
   buildMistralRequest,
   parseFlashcardResponseData,
 } from "../src/services/mistral";
-import { AxiosHttpClient } from "./AxiosHttpClient";
 
 const parseAndValidateFlashcards = (response: string) => {
   try {
@@ -25,7 +24,6 @@ const parseAndValidateFlashcards = (response: string) => {
 describe("Mistral Service Integration", () => {
   const apiKey = process.env.MISTRAL_API_KEY;
   const agentId = process.env.MISTRAL_AGENT_ID;
-  const httpClient = new AxiosHttpClient();
 
   const itif = apiKey ? it : it.skip;
   const itifAgent = apiKey && agentId ? it : it.skip;

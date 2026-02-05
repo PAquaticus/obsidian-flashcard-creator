@@ -1,40 +1,52 @@
-import 'dotenv/config';
-import { describe, it, expect } from 'vitest';
-import { gemini } from '../src/services/gemini';
-import { AxiosHttpClient } from './AxiosHttpClient';
+import "dotenv/config";
+import { describe, it, expect } from "vitest";
+import { gemini } from "../src/services/gemini";
+import { BunBasedClient } from "./BunBasedClient";
 
-describe('Gemini Service', () => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    const httpClient = new AxiosHttpClient();
+describe("Gemini Service", () => {
+  const apiKey = process.env.GEMINI_API_KEY;
 
-    // Skip tests if API key is not provided
-    const itif = apiKey ? it : it.skip;
+  // Skip tests if API key is not provided
+  const itif = apiKey ? it : it.skip;
 
-    itif('should generate flashcards from a given text', async () => {
-        const systemPrompt = "Generate 2 flashcards in JSON format with 'question' and 'answer' keys from the following text:";
-        const content = "The capital of France is Paris. The mitochondria is the powerhouse of the cell.";
+  itif(
+    "should generate flashcards from a given text",
+    async () => {
+      const systemPrompt =
+        "Generate 2 flashcards in JSON format with 'question' and 'answer' keys from the following text:";
+      const content =
+        "The capital of France is Paris. The mitochondria is the powerhouse of the cell.";
 
-        const response = await gemini.generateFlashcards(httpClient, apiKey!, systemPrompt, content);
+      const httpClient = new BunBasedClient();
 
-        console.log("Raw Gemini Response:", response); // Log the raw response
+      const response = await gemini.generateFlashcards(
+        httpClient,
+        apiKey!,
+        systemPrompt,
+        content,
+      );
 
-        expect(response).toBeTypeOf('string');
-        expect(response.length).toBeGreaterThan(0);
+      console.log("Raw Gemini Response:", response); // Log the raw response
 
-        let flashcards;
-        try {
-            flashcards = JSON.parse(response);
-        } catch (e) {
-            console.error("Failed to parse JSON:", e); // Log parsing error
-            // Fail the test if parsing fails
-            expect.fail("Response was not valid JSON.");
-        }
+      expect(response).toBeTypeOf("string");
+      expect(response.length).toBeGreaterThan(0);
 
-        expect(Array.isArray(flashcards)).toBe(true);
-        expect(flashcards.length).toBe(2);
-        flashcards.forEach(card => {
-            expect(card).toHaveProperty('question');
-            expect(card).toHaveProperty('answer');
-        });
-    }, 10000); // 10 second timeout for the API call
+      let flashcards;
+      try {
+        flashcards = JSON.parse(response);
+      } catch (e) {
+        console.error("Failed to parse JSON:", e); // Log parsing error
+        // Fail the test if parsing fails
+        expect.fail("Response was not valid JSON.");
+      }
+
+      expect(Array.isArray(flashcards)).toBe(true);
+      expect(flashcards.length).toBe(2);
+      flashcards.forEach((card) => {
+        expect(card).toHaveProperty("question");
+        expect(card).toHaveProperty("answer");
+      });
+    },
+    10000,
+  ); // 10 second timeout for the API call
 });
