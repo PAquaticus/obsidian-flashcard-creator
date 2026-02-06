@@ -12,13 +12,7 @@
     import { gemini } from "./services/gemini";
     import { mistral } from "./services/mistral";
     import { Notice, type App, MarkdownView } from "obsidian";
-    import type {
-        AiAnkiFlashcardsSettings,
-        LLMProvider,
-        Deck,
-        Note,
-        GenerationPayload,
-    } from "./types";
+    import type { LLMProvider, Deck, Note, GenerationPayload } from "./types";
     import { ObsidianHttpClient } from "./services/httpClient";
     import type { LLM } from "./services/llm";
 
@@ -101,15 +95,6 @@
         $flashcards = [];
 
         try {
-            console.log(
-                "generate() called. app.workspace.activeLeaf:",
-                app.workspace.activeLeaf,
-            );
-            console.log(
-                'generate() called. app.workspace.getLeavesOfType("markdown"):',
-                app.workspace.getLeavesOfType("markdown"),
-            );
-
             // 1. Get content from an open Markdown editor
             let content = "";
             let editorFound = false;

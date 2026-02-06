@@ -15,7 +15,7 @@ An Obsidian plugin to generate Anki flashcards from your notes using AI.
   - Create new Anki decks on the fly from within Obsidian.
   - Uses a custom anki card api that under the hood calls anki pip package on a nother server
 
-## Technologies Used
+## Technologies Ushttps://tchibo.atlassian.net/wiki/spaces/SOUR/pages/364282066/04+Technical+Solutione
 
 - [Obsidian.md](https://obsidian.md/): The note-taking application where the plugin runs.
 - [Svelte](https://svelte.dev/): For building the plugin's user interface.
@@ -112,4 +112,3 @@ bun run lint
 # To format the code
 bun run format
 ```
-
