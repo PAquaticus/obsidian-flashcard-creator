@@ -4,7 +4,7 @@
   "description": "Use LLMs to generate flashcards from your current note and push them to Anki",
   "author": "Pascal Bawidamann",
   "authorUrl": "https://github.com/PAquaticus/obsidian-flashcard-creator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": "1.11.4",
   "isDesktopOnly": false
 }

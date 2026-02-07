@@ -101,16 +101,11 @@
 
             // Iterate through all leaves to find a Markdown view
             app.workspace.iterateAllLeaves((leaf) => {
-                console.log("Iterating leaf:", leaf);
                 if (leaf.view instanceof MarkdownView) {
-                    console.log("Found MarkdownView leaf:", leaf);
-                    console.log("Leaf view:", leaf.view);
                     const editor = leaf.view.editor;
                     content = editor.getSelection(); // Try to get selection first
-                    console.log("Content after getSelection():", content);
                     if (!content) {
                         content = editor.getValue(); // If no selection, get full content
-                        console.log("Content after getValue():", content);
                     }
                     if (content) {
                         // If we found content, we're done
@@ -120,8 +115,6 @@
                 }
                 return true; // Continue iterating
             });
-
-            console.log("Final content found:", content);
 
             if (!editorFound) {
                 throw new Error(
@@ -255,7 +248,6 @@
             new Notice("Anki decks refreshed!");
         } catch (e: any) {
             // biome-ignore lint/suspicious/noExplicitAny: Error handling can be generic
-            console.error("Failed to refresh Anki decks:", e);
             new Notice(
                 `Failed to refresh Anki decks. Is Anki running and accessible at ${$ankiConnectUrl}? Check console for details.`,
             );
